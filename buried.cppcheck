@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <builddir>buried-cppcheck-build-dir</builddir>
+    <platform>win64</platform>
+    <importproject>build/mingw-debug/compile_commands.json</importproject>
+    <analyze-all-vs-configs>false</analyze-all-vs-configs>
+    <check-headers>true</check-headers>
+    <check-unused-templates>true</check-unused-templates>
+    <inline-suppression>true</inline-suppression>
+    <max-ctu-depth>2</max-ctu-depth>
+    <max-template-recursion>100</max-template-recursion>
+    <defines>
+        <define name="__MINGW32__=1"/>
+        <define name="_WIN32=1"/>
+        <define name="_WIN64=1"/>
+        <define name="WIN32=1"/>
+        <define name="WCHAR_MIN=0"/>
+        <define name="WCHAR_MAX=65535"/>
+    </defines>
+    <exclude>
+        <path name="src/third_party/"/>
+        <path name="googletest/"/>
+        <path name="build/"/>
+        <path name="server/target/"/>
+    </exclude>
+    <suppressions>
+        <suppression fileName="*/src/third_party/boost/integer_traits.hpp">preprocessorErrorDirective</suppression>
+        <suppression fileName="*/src/third_party/boost/beast/websocket/impl/teardown.hpp">syntaxError</suppression>
+        <suppression fileName="*/src/third_party/boost/beast/websocket/impl/teardown.hpp">syntaxError</suppression>
+    </suppressions>
+    <check-level-normal/>
+    <project-name>buried</project-name>
+</project>

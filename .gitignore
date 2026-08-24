@@ -1,0 +1,15 @@
+# Build output
+build/
+cmake-build-*/
+buried-cppcheck-build-dir/
+
+# IDE settings
+.idea/
+.vscode/
+
+# Generated project output
+buried/
+# Local tooling
+.codegraph/
+.cursor/
+bin/

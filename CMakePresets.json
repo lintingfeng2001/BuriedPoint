@@ -1,0 +1,36 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "mingw-debug",
+      "displayName": "MSYS2 MinGW64 Debug",
+      "description": "Build tests and examples with MSYS2 GCC and Ninja",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/mingw-debug",
+      "environment": {
+        "PATH": "D:\\software\\msys2\\mingw64\\bin;$penv{PATH}"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "D:/software/msys2/mingw64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "D:/software/msys2/mingw64/bin/g++.exe",
+        "CMAKE_MAKE_PROGRAM": "D:/software/msys2/mingw64/bin/ninja.exe",
+        "BUILD_BURIED_TEST": "ON",
+        "BUILD_BURIED_EXAMPLES": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "mingw-debug",
+      "displayName": "Build MSYS2 MinGW64 Debug",
+      "configurePreset": "mingw-debug",
+      "jobs": 8
+    }
+  ]
+}
