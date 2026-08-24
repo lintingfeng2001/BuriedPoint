@@ -210,11 +210,11 @@ void BuriedReportState::Shutdown() noexcept {
       });
     }
 
-    if (posted && completion_future.wait_for(std::chrono::seconds(5)) !=
-                      std::future_status::ready) {
-      SPDLOG_LOGGER_ERROR(
-          logger_,
-          "BuriedReportState shutdown timed out; queued state remains owned");
+    if (posted) {
+      // The completion task is ordered after every accepted submission on the
+      // report strand. Returning earlier would allow callers to read or remove
+      // the database while those submissions are still running.
+      completion_future.wait();
     }
   } catch (const std::exception& error) {
     SPDLOG_LOGGER_ERROR(logger_, "BuriedReportState shutdown error: {}",

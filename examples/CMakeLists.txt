@@ -7,15 +7,19 @@ include_directories(. .. ../src ../src/third_party ../src/third_party/spdlog/inc
 add_executable(buried_example buried_example.cc)
 target_link_libraries(buried_example Buried_static)
 copy_mingw_runtime_dlls(buried_example)
+copy_asan_runtime_dll(buried_example)
 
 add_executable(buried_example_shared buried_example.cc)
 target_link_libraries(buried_example_shared Buried_shared)
 copy_mingw_runtime_dlls(buried_example_shared)
+copy_asan_runtime_dll(buried_example_shared)
 
 add_executable(context_example context_example.cc)
 target_link_libraries(context_example Buried_static)
 copy_mingw_runtime_dlls(context_example)
+copy_asan_runtime_dll(context_example)
 
 add_executable(reporter_example reporter_example.cc)
 target_link_libraries(reporter_example Buried_static)
 copy_mingw_runtime_dlls(reporter_example)
+copy_asan_runtime_dll(reporter_example)
