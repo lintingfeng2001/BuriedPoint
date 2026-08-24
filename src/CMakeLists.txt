@@ -19,6 +19,7 @@ set(BURIED_SRCS
     report/http_report.cc
     common/common_service.cc
     context/context.cc
+    context/strand.cc
     buried.cc
     buried_core.cc
 )
