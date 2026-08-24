@@ -2,13 +2,14 @@ cmake_minimum_required(VERSION 3.20)
 project(BuriedTest)
 
 add_definitions(-D_WIN32_WINNT=0x0601)
-include_directories(. ../src/third_party)
+include_directories(. ../src ../src/third_party)
 
 set(TEST_SRC
     test_crypt.cc
     test_common_service.cc
     test_http.cc
     test_executor.cc
+    test_report.cc
     test_db.cc
     test.cc)
 

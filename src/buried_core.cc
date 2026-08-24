@@ -65,6 +65,10 @@ BuriedResult Buried::Start(const Config& config) {
 
 BuriedResult Buried::Report(std::string title, std::string data,
                             uint32_t priority) {
+  if (!buried_report_) {
+    return BuriedResult::kBuriedInvalidParam;
+  }
+
   buried::BuriedData buried_data;
   buried_data.title = std::move(title);
   buried_data.data = std::move(data);
