@@ -40,12 +40,15 @@ flowchart LR
 - CMake 3.20 或更高版本。
 - C++20 和 C11 编译器。
 - 推荐使用 MSYS2 MinGW64 GCC 与 Ninja；本地和 CI 均已验证该组合。
+- AddressSanitizer 配置使用 Visual Studio 2022 工具链、`clang-cl`、
+  C++ AddressSanitizer 组件和 Windows SDK。
 - 使用仓库中的 `mingw-debug` preset 时需要 CMake 3.25 或更高版本，因为 `CMakePresets.json` 使用 schema v6。
 - Rust/Cargo 仅在运行可选的本地模拟服务时需要。
 
 仓库已包含 Boost.Asio/Beast、spdlog、mbedTLS、SQLite/sqlite_orm、nlohmann/json 和 GoogleTest 等 C++ 依赖，不需要额外的 C++ 包管理器。
 
-> CMake 中保留了 MSVC 相关选项，但当前默认开发环境和 CI 均使用 MinGW64，因此不能视为已经验证了 MSVC 构建。
+> 普通开发和主 CI 使用 MinGW64；ASan 构建使用 Visual Studio 的
+> `clang-cl` 工具集。原生 `cl.exe` 构建仍未单独验证。
 
 ## 构建
 
@@ -92,6 +95,41 @@ D:/software/msys2/mingw64/bin/ninja.exe
 
 其他环境请使用前面的通用命令，或复制 preset 后调整编译器和 Ninja 路径。
 
+### CLion + clang-cl AddressSanitizer
+
+Windows 下的 ASan 配置不会替换现有 MinGW Profile。先在 Visual Studio
+Installer 的“使用 C++ 的桌面开发”中安装：
+
+- C++ AddressSanitizer
+- 适用于 Windows 的 C++ Clang 编译器
+- MSVC v143 x64/x86 生成工具和 Windows SDK
+
+然后在 CLion 中完成以下设置：
+
+1. 打开 **Settings | Build, Execution, Deployment | Toolchains**。
+2. 新建 Visual Studio Toolchain，架构选择 `amd64`。
+3. 将 C 和 C++ 编译器指向 Visual Studio 安装目录下的
+   `VC/Tools/Llvm/x64/bin/clang-cl.exe`。
+4. 在 **Settings | Build, Execution, Deployment | CMake** 中启用
+   `clang-cl-asan` preset/Profile。该 preset 已选择 `RelWithDebInfo`，并使用
+   CLion Toolchain 中配置的 Ninja。
+5. 构建 `buried_test`，然后直接从 CLion 运行测试。
+
+也可以在 Visual Studio Developer PowerShell 中执行以下命令，但需要先
+确保 Ninja 位于 `PATH`，或通过 `CMAKE_MAKE_PROGRAM` 指定其路径：
+
+```powershell
+cmake --preset clang-cl-asan
+cmake --build --preset clang-cl-asan
+.\build\clang-cl-asan\tests\buried_test.exe `
+  --gtest_color=yes
+```
+
+ASan 发现越界访问、Use-After-Free、Double-Free 等错误时会输出调用栈并使
+测试失败。该 preset 使用独立的 `build/clang-cl-asan` 目录，不会污染
+`build/mingw-debug`。构建过程会把匹配的 ASan 运行库 DLL 复制到测试和示例
+程序旁边，因此从 CLion 直接运行时不需要手工修改 `PATH`。
+
 ### CMake 选项
 
 | 选项 | 默认值 | 说明 |
@@ -101,6 +139,7 @@ D:/software/msys2/mingw64/bin/ninja.exe
 | `BUILD_BURIED_EXAMPLES` | `OFF` | 构建示例程序 |
 | `BUILD_BURIED_TEST` | `OFF` | 构建 GoogleTest 测试程序 |
 | `BUILD_BURIED_FOR_MT` | `OFF` | 使用 MSVC 时切换到 `/MT` 或 `/MTd` |
+| `ENABLE_ASAN` | `OFF` | 为项目库、测试和示例启用 AddressSanitizer |
 
 测试程序依赖 `Buried_static`。完整示例集同时链接静态库和共享库；启用 `BUILD_BURIED_EXAMPLES` 时应保留两种库目标。
 
@@ -145,7 +184,14 @@ MinGW Debug 构建会生成：
 - 向 `master` 推送提交。
 - 创建或更新目标为 `master` 的 Pull Request。
 
-CI 会完成 MinGW64 配置、编译、GoogleTest 测试和 `context_example` 运行。当前两个标记为 `DISABLED_` 的数据库/HTTP 测试不会执行，CI 也不会启动 Rust 模拟服务，因此真实 HTTP 上报链路仍需要单独进行本地集成测试。
+CI 包含两个独立任务：
+
+- `Windows MinGW64`：执行普通 Debug 构建、GoogleTest 和 `context_example`。
+- `Windows clang-cl ASan`：执行 `clang-cl` ASan 构建，并在 ASan 运行库下
+  再次运行 GoogleTest 和 `context_example`。
+
+当前两个标记为 `DISABLED_` 的数据库/HTTP 测试不会执行，CI 也不会启动
+Rust 模拟服务，因此真实 HTTP 上报链路仍需要单独进行本地集成测试。
 
 ## 快速使用
 
@@ -274,9 +320,12 @@ cargo run --manifest-path server/Cargo.toml
 
 ## 当前限制
 
-- 仅验证 Windows + MSYS2 MinGW64，尚未提供跨平台实现。
+- 仅验证 Windows 上的 MSYS2 MinGW64 和 Visual Studio `clang-cl` ASan
+  配置，尚未提供跨平台实现。
 - 上报使用明文 HTTP，不支持 HTTPS/TLS。
 - 本地 AES 使用项目内固定方式派生密钥，只能视为缓存内容处理，不能作为生产级密钥保护方案。
 - 当前上报机制不承诺 exactly-once 或端到端送达保证。
 - `custom_data` 必须是有效 JSON；无效内容目前可能导致解析异常。
+- Windows ASan 不等同于完整的内存泄漏检测；仍需结合 Visual Studio
+  Diagnostics 等工具检查未释放但未发生非法访问的内存。
 - 仓库目前没有根级 `LICENSE` 文件，请勿自行推定代码授权范围。

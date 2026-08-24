@@ -2,7 +2,7 @@
   "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 20,
+    "minor": 25,
     "patch": 0
   },
   "configurePresets": [
@@ -23,6 +23,21 @@
         "BUILD_BURIED_TEST": "ON",
         "BUILD_BURIED_EXAMPLES": "ON"
       }
+    },
+    {
+      "name": "clang-cl-asan",
+      "displayName": "Visual Studio 2022 clang-cl ASan",
+      "description": "Build tests and examples with clang-cl and AddressSanitizer",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/clang-cl-asan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_COMPILER": "clang-cl.exe",
+        "CMAKE_CXX_COMPILER": "clang-cl.exe",
+        "ENABLE_ASAN": "ON",
+        "BUILD_BURIED_TEST": "ON",
+        "BUILD_BURIED_EXAMPLES": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -30,6 +45,12 @@
       "name": "mingw-debug",
       "displayName": "Build MSYS2 MinGW64 Debug",
       "configurePreset": "mingw-debug",
+      "jobs": 8
+    },
+    {
+      "name": "clang-cl-asan",
+      "displayName": "Build Visual Studio 2022 clang-cl ASan",
+      "configurePreset": "clang-cl-asan",
       "jobs": 8
     }
   ]

@@ -16,3 +16,4 @@ set(TEST_SRC
 add_executable(buried_test ${TEST_SRC})
 target_link_libraries(buried_test Buried_static gtest)
 copy_mingw_runtime_dlls(buried_test)
+copy_asan_runtime_dll(buried_test)
